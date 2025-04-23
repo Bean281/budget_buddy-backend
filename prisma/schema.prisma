@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This is your Prisma schema file for Budget Buddy
+model User {
+  id                  String            @id @default(cuid())
+  email               String            @unique
+  password            String // Hashed password
+  firstName           String?
+  lastName            String?
+  profileImageUrl     String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  
+  // User preferences
+  currency            String            @default("USD")
+  symbolPosition      SymbolPosition    @default(BEFORE)
+  decimalPlaces       Int               @default(2)
+  thousandsSeparator  String            @default(",")
+  decimalSeparator    String            @default(".")
+  hideCents           Boolean           @default(false)
+  roundToNearest      RoundingOption    @default(NONE)
+  weekStartDay        WeekDay           @default(SUNDAY)
+  
+  // Notification preferences
+  notifyLowBalance    Boolean           @default(true)
+  notifyBillsDue      Boolean           @default(true)
+  notifyGoalReached   Boolean           @default(true)
+  notifyBudgetExceeded Boolean          @default(true)
+  
+  // Theme preference
+  theme               Theme             @default(LIGHT)
+  
+  // Relations
+  budgets             Budget[]
+  transactions        Transaction[]
+  categories          Category[]
+  bills               Bill[]
+  savingsGoals        SavingsGoal[]
+}
+
+model Budget {
+  id                String           @id @default(cuid())
+  name              String
+  description       String?
+  amount            Float
+  startDate         DateTime
+  endDate           DateTime
+  type              BudgetTimeframe
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryAllocations CategoryAllocation[]
+}
+
+model CategoryAllocation {
+  id               String     @id @default(cuid())
+  amount           Float
+  
+  // Relations
+  budgetId         String
+  budget           Budget     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  categoryId       String
+  category         Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  color            String
+  icon             String
+  type             CategoryType
+  isDefault        Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     Transaction[]
+  bills            Bill[]
+  allocations      CategoryAllocation[]
+}
+
+model Transaction {
+  id               String     @id @default(cuid())
+  amount           Float
+  description      String?
+  date             DateTime
+  notes            String?
+  type             TransactionType
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // Relations
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId       String
+  category         Category   @relation(fields: [categoryId], references: [id])
+  billId           String?
+  bill             Bill?      @relation(fields: [billId], references: [id])
+}
+
+model Bill {
+  id               String     @id @default(cuid())
+  name             String
+  amount           Float
+  dueDate          DateTime
+  frequency        BillFrequency
+  autopay          Boolean    @default(false)
+  notes            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // Relations
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId       String
+  category         Category   @relation(fields: [categoryId], references: [id])
+  transactions     Transaction[]
+}
+
+model SavingsGoal {
+  id               String     @id @default(cuid())
+  name             String
+  targetAmount     Float
+  currentAmount    Float      @default(0)
+  targetDate       DateTime?
+  completed        Boolean    @default(false)
+  notes            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // Relations
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Enums
+enum CategoryType {
+  EXPENSE
+  INCOME
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+}
+
+enum BudgetTimeframe {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum BillFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  BIANNUALLY
+  ANNUALLY
+}
+
+enum SymbolPosition {
+  BEFORE
+  AFTER
+}
+
+enum RoundingOption {
+  NONE
+  NEAREST_DOLLAR
+  NEAREST_FIFTY_CENTS
+  NEAREST_QUARTER
+}
+
+enum WeekDay {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
