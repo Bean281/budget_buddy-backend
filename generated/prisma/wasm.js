@@ -119,21 +119,99 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
+  email: 'email',
+  password: 'password',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  profileImageUrl: 'profileImageUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  email: 'email',
-  hash: 'hash',
-  firstName: 'firstName',
-  lastName: 'lastName'
+  currency: 'currency',
+  symbolPosition: 'symbolPosition',
+  decimalPlaces: 'decimalPlaces',
+  thousandsSeparator: 'thousandsSeparator',
+  decimalSeparator: 'decimalSeparator',
+  hideCents: 'hideCents',
+  roundToNearest: 'roundToNearest',
+  weekStartDay: 'weekStartDay',
+  notifyLowBalance: 'notifyLowBalance',
+  notifyBillsDue: 'notifyBillsDue',
+  notifyGoalReached: 'notifyGoalReached',
+  notifyBudgetExceeded: 'notifyBudgetExceeded',
+  theme: 'theme'
 };
 
-exports.Prisma.BookmarkScalarFieldEnum = {
+exports.Prisma.BudgetScalarFieldEnum = {
   id: 'id',
+  name: 'name',
+  description: 'description',
+  amount: 'amount',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  title: 'title',
+  userId: 'userId'
+};
+
+exports.Prisma.CategoryAllocationScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  budgetId: 'budgetId',
+  categoryId: 'categoryId'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
   description: 'description',
-  link: 'link',
+  color: 'color',
+  icon: 'icon',
+  type: 'type',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.TransactionScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  description: 'description',
+  date: 'date',
+  notes: 'notes',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  categoryId: 'categoryId',
+  billId: 'billId'
+};
+
+exports.Prisma.BillScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  frequency: 'frequency',
+  autopay: 'autopay',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  categoryId: 'categoryId'
+};
+
+exports.Prisma.SavingsGoalScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  targetAmount: 'targetAmount',
+  currentAmount: 'currentAmount',
+  targetDate: 'targetDate',
+  completed: 'completed',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   userId: 'userId'
 };
 
@@ -151,11 +229,67 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.SymbolPosition = exports.$Enums.SymbolPosition = {
+  BEFORE: 'BEFORE',
+  AFTER: 'AFTER'
+};
 
+exports.RoundingOption = exports.$Enums.RoundingOption = {
+  NONE: 'NONE',
+  NEAREST_DOLLAR: 'NEAREST_DOLLAR',
+  NEAREST_FIFTY_CENTS: 'NEAREST_FIFTY_CENTS',
+  NEAREST_QUARTER: 'NEAREST_QUARTER'
+};
+
+exports.WeekDay = exports.$Enums.WeekDay = {
+  SUNDAY: 'SUNDAY',
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY'
+};
+
+exports.Theme = exports.$Enums.Theme = {
+  LIGHT: 'LIGHT',
+  DARK: 'DARK'
+};
+
+exports.BudgetTimeframe = exports.$Enums.BudgetTimeframe = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY'
+};
+
+exports.CategoryType = exports.$Enums.CategoryType = {
+  EXPENSE: 'EXPENSE',
+  INCOME: 'INCOME'
+};
+
+exports.TransactionType = exports.$Enums.TransactionType = {
+  EXPENSE: 'EXPENSE',
+  INCOME: 'INCOME'
+};
+
+exports.BillFrequency = exports.$Enums.BillFrequency = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  BIWEEKLY: 'BIWEEKLY',
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  BIANNUALLY: 'BIANNUALLY',
+  ANNUALLY: 'ANNUALLY'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Bookmark: 'Bookmark'
+  Budget: 'Budget',
+  CategoryAllocation: 'CategoryAllocation',
+  Category: 'Category',
+  Transaction: 'Transaction',
+  Bill: 'Bill',
+  SavingsGoal: 'SavingsGoal'
 };
 
 /**

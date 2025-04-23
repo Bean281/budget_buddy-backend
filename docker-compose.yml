@@ -1,23 +1,23 @@
 version: '3.9'
 
 services:
-  template-db:
+  budget_buddy-db:
     image: postgres:15
-    container_name: template-db
+    container_name: budget_buddy-db
     ports:
       - 5434:5432
     environment:
-      POSTGRES_USER: template
+      POSTGRES_USER: budget_buddy
       POSTGRES_PASSWORD: strongpassword
-      POSTGRES_DB: template_db
+      POSTGRES_DB: budget_buddy_db
     volumes:
-      - template_pgdata:/var/lib/postgresql/data
+      - budget_buddy_pgdata:/var/lib/postgresql/data
     networks:
-      - template-net
+      - budget_buddy-net
 
 networks:
-  template-net:
+  budget_buddy-net:
 
 
 volumes:
-  template_pgdata:
+  budget_buddy_pgdata:
