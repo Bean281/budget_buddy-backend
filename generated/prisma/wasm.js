@@ -141,6 +141,47 @@ exports.Prisma.UserScalarFieldEnum = {
   theme: 'theme'
 };
 
+exports.Prisma.TransactionScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  description: 'description',
+  date: 'date',
+  notes: 'notes',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  categoryId: 'categoryId',
+  billId: 'billId'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  color: 'color',
+  icon: 'icon',
+  type: 'type',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.BillScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  frequency: 'frequency',
+  autopay: 'autopay',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  categoryId: 'categoryId'
+};
+
 exports.Prisma.BudgetScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -161,47 +202,6 @@ exports.Prisma.CategoryAllocationScalarFieldEnum = {
   categoryId: 'categoryId'
 };
 
-exports.Prisma.CategoryScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  color: 'color',
-  icon: 'icon',
-  type: 'type',
-  isDefault: 'isDefault',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  userId: 'userId'
-};
-
-exports.Prisma.TransactionScalarFieldEnum = {
-  id: 'id',
-  amount: 'amount',
-  description: 'description',
-  date: 'date',
-  notes: 'notes',
-  type: 'type',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  userId: 'userId',
-  categoryId: 'categoryId',
-  billId: 'billId'
-};
-
-exports.Prisma.BillScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  amount: 'amount',
-  dueDate: 'dueDate',
-  frequency: 'frequency',
-  autopay: 'autopay',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  userId: 'userId',
-  categoryId: 'categoryId'
-};
-
 exports.Prisma.SavingsGoalScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -213,6 +213,19 @@ exports.Prisma.SavingsGoalScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId'
+};
+
+exports.Prisma.PlanItemScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  amount: 'amount',
+  notes: 'notes',
+  planType: 'planType',
+  itemType: 'itemType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  categoryId: 'categoryId'
 };
 
 exports.Prisma.SortOrder = {
@@ -256,18 +269,12 @@ exports.Theme = exports.$Enums.Theme = {
   DARK: 'DARK'
 };
 
-exports.BudgetTimeframe = exports.$Enums.BudgetTimeframe = {
-  WEEKLY: 'WEEKLY',
-  MONTHLY: 'MONTHLY',
-  YEARLY: 'YEARLY'
-};
-
-exports.CategoryType = exports.$Enums.CategoryType = {
+exports.TransactionType = exports.$Enums.TransactionType = {
   EXPENSE: 'EXPENSE',
   INCOME: 'INCOME'
 };
 
-exports.TransactionType = exports.$Enums.TransactionType = {
+exports.CategoryType = exports.$Enums.CategoryType = {
   EXPENSE: 'EXPENSE',
   INCOME: 'INCOME'
 };
@@ -282,14 +289,21 @@ exports.BillFrequency = exports.$Enums.BillFrequency = {
   ANNUALLY: 'ANNUALLY'
 };
 
+exports.BudgetTimeframe = exports.$Enums.BudgetTimeframe = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
+  Transaction: 'Transaction',
+  Category: 'Category',
+  Bill: 'Bill',
   Budget: 'Budget',
   CategoryAllocation: 'CategoryAllocation',
-  Category: 'Category',
-  Transaction: 'Transaction',
-  Bill: 'Bill',
-  SavingsGoal: 'SavingsGoal'
+  SavingsGoal: 'SavingsGoal',
+  PlanItem: 'PlanItem'
 };
 
 /**

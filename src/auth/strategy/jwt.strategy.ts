@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   // Implement the validate method
-  async validate(payload: { sub: number; email: string }) {
+  async validate(payload: { sub: string; email: string }) {
     // The payload contains the decoded JWT
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
@@ -31,10 +31,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new Error('User not found');
     }
 
-    // Exclude the hash field from the user object
-    const { hash, ...userWithoutHash } = user;
+    // Exclude the password field from the user object
+    const { password, ...userWithoutPassword } = user;
 
-    // Return the user object without the hash field
-    return userWithoutHash; // Attach user info to the request object
+    // Return the user object without the password field
+    return userWithoutPassword; // Attach user info to the request object
   }
 }

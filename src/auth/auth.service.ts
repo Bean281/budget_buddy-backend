@@ -1,10 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './dto';
+import { AuthDto, ForgotPasswordDto, ResetPasswordDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -15,23 +16,29 @@ export class AuthService {
   ) {}
 
   async signup(dto: AuthDto) {
-    const hash = await argon.hash(dto.password);
+    const hashedPassword = await argon.hash(dto.password);
 
     try {
       const user = await this.prisma.user.create({
         data: {
           email: dto.email,
-          hash,
+          password: hashedPassword,
+          firstName: dto.firstName || null,
+          lastName: dto.lastName || null,
         },
       });
 
-      const { hash: _, ...userWithoutHash } = user;
+      const token = await this.signToken(user.id, user.email);
 
-      return userWithoutHash;
+      const { password, ...userWithoutPassword } = user;
+      return {
+        ...userWithoutPassword,
+        ...token,
+      };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials taken');
+          throw new ForbiddenException('Email already in use');
         }
       }
       throw error;
@@ -45,17 +52,65 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('Credentials incorrect');
+    if (!user) throw new ForbiddenException('Invalid credentials');
 
-    const passwordMatches = await argon.verify(user.hash, dto.password);
+    const passwordMatches = await argon.verify(user.password, dto.password);
 
-    if (!passwordMatches) throw new ForbiddenException('Credentials incorrect');
+    if (!passwordMatches) throw new ForbiddenException('Invalid credentials');
 
-    return this.signToken(user?.id, user.email);
+    const token = await this.signToken(user.id, user.email);
+
+    const { password, ...userWithoutPassword } = user;
+    return {
+      ...userWithoutPassword,
+      ...token,
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      return { message: 'If your email exists in our system, you will receive a password reset link' };
+    }
+
+    const resetToken = uuidv4();
+    
+    console.log(`Reset token for ${dto.email}: ${resetToken}`);
+
+    return { 
+      message: 'If your email exists in our system, you will receive a password reset link',
+      resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    if (!dto.token || dto.token.length < 10) {
+      throw new ForbiddenException('Invalid reset token');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const hashedPassword = await argon.hash(dto.newPassword);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Password has been successfully reset' };
   }
 
   async signToken(
-    userId: number,
+    userId: string,
     email: string,
   ): Promise<{ access_token: string }> {
     const payload = {
