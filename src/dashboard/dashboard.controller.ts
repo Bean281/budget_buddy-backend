@@ -11,7 +11,7 @@ import { ParseDatePipe } from 'src/transactions/pipes/parse-date.pipe';
 @ApiBearerAuth('JWT-auth')
 @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token is missing or invalid' })
 @UseGuards(JwtGuard)
-@Controller('api/dashboard')
+@Controller('dashboard')
 export class DashboardController {
   constructor(private dashboardService: DashboardService) {}
 

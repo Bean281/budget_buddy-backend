@@ -16,7 +16,7 @@ import { PlanTypeEnum, PlanItemTypeEnum } from './dto/plan-types.enum';
 @ApiBearerAuth('JWT-auth')
 @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token is missing or invalid' })
 @UseGuards(JwtGuard)
-@Controller('api/planning')
+@Controller('planning')
 export class PlansController {
   constructor(private plansService: PlansService) {}
 
