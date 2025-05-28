@@ -191,4 +191,81 @@ export class SavingsGoalsController {
   ) {
     return this.goalService.completeGoal(userId, goalId);
   }
+
+  /**
+   * Sync savings goals with dashboard totals (repair inconsistencies)
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Sync status and results
+   */
+  @Post('sync')
+  @ApiOperation({
+    summary: 'Sync savings goals with dashboard',
+    description: 'Repairs any inconsistencies between savings goals and dashboard totals',
+  })
+  @ApiOkResponse({
+    description: 'Savings goals synced successfully',
+  })
+  syncGoalsWithDashboard(
+    @GetUser('id') userId: string,
+  ) {
+    return this.goalService.syncGoalsWithDashboard(userId);
+  }
+
+  /**
+   * Get historical savings data across multiple months
+   * 
+   * @param userId - Current authenticated user ID
+   * @param months - Number of months to retrieve (default: 6)
+   * @returns Historical savings data with trends
+   */
+  @Get('history')
+  @ApiOperation({
+    summary: 'Get savings history',
+    description: 'Retrieves historical savings data across multiple months with trends and statistics',
+  })
+  @ApiQuery({
+    name: 'months',
+    required: false,
+    type: Number,
+    description: 'Number of months to retrieve (default: 6)',
+    example: 12,
+  })
+  @ApiOkResponse({
+    description: 'Savings history retrieved successfully',
+  })
+  getSavingsHistory(
+    @GetUser('id') userId: string,
+    @Query('months') months?: number,
+  ) {
+    return this.goalService.getSavingsHistory(userId, months);
+  }
+
+  /**
+   * Get savings analytics - compare actual vs planned savings
+   * 
+   * @param userId - Current authenticated user ID
+   * @param period - Optional period filter (YYYY-MM format)
+   * @returns Savings analytics including dashboard sync status
+   */
+  @Get('analytics')
+  @ApiOperation({
+    summary: 'Get savings analytics',
+    description: 'Compare actual savings (from goals) with dashboard totals and get sync status',
+  })
+  @ApiQuery({
+    name: 'period',
+    required: false,
+    description: 'Period to analyze in YYYY-MM format (defaults to current month)',
+    example: '2024-12',
+  })
+  @ApiOkResponse({
+    description: 'Savings analytics retrieved successfully',
+  })
+  getSavingsAnalytics(
+    @GetUser('id') userId: string,
+    @Query('period') period?: string,
+  ) {
+    return this.goalService.getSavingsAnalytics(userId, period);
+  }
 } 
