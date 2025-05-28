@@ -126,28 +126,73 @@ export class SavingsGoalsService {
       throw new ForbiddenException('Cannot add funds to a completed goal');
     }
 
-    // Update the current amount
-    const newAmount = goal.currentAmount + dto.amount;
-    const isCompleted = newAmount >= goal.targetAmount;
+    // Use transaction to ensure both operations succeed or fail together
+    const result = await this.prisma.$transaction(async (prisma) => {
+      // Update the current amount in savings goal
+      const newAmount = goal.currentAmount + dto.amount;
+      const isCompleted = newAmount >= goal.targetAmount;
 
-    const updatedGoal = await this.prisma.savingsGoal.update({
-      where: { id: goalId },
-      data: {
-        currentAmount: newAmount,
-        completed: isCompleted,
-      },
+      const updatedGoal = await prisma.savingsGoal.update({
+        where: { id: goalId },
+        data: {
+          currentAmount: newAmount,
+          completed: isCompleted,
+        },
+      });
+
+      // Create or update savings plan item to sync with dashboard
+      const planItemDescription = `Savings: ${goal.name}`;
+      
+      // Check if there's already a savings plan item for current month
+      const currentDate = new Date();
+      const currentMonthPlan = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      const existingSavingsItem = await prisma.planItem.findFirst({
+        where: {
+          userId,
+          itemType: 'SAVINGS',
+          planType: currentMonthPlan,
+          description: { contains: goal.name },
+        },
+      });
+
+      if (existingSavingsItem) {
+        // Update existing plan item by adding the new amount
+        await prisma.planItem.update({
+          where: { id: existingSavingsItem.id },
+          data: {
+            amount: existingSavingsItem.amount + dto.amount,
+            notes: `${existingSavingsItem.notes || ''}\nAdded $${dto.amount} on ${new Date().toISOString().split('T')[0]}`,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // Create new savings plan item
+        await prisma.planItem.create({
+          data: {
+            userId,
+            description: planItemDescription,
+            amount: dto.amount,
+            notes: `Funds added to ${goal.name}`,
+            planType: currentMonthPlan,
+            itemType: 'SAVINGS',
+          },
+        });
+      }
+
+      return updatedGoal;
     });
 
-    const progressPercentage = updatedGoal.targetAmount > 0 
-      ? Math.min(100, (updatedGoal.currentAmount / updatedGoal.targetAmount) * 100) 
+    const progressPercentage = result.targetAmount > 0 
+      ? Math.min(100, (result.currentAmount / result.targetAmount) * 100) 
       : 0;
     
-    const daysRemaining = updatedGoal.targetDate 
-      ? Math.max(0, Math.ceil((new Date(updatedGoal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) 
+    const daysRemaining = result.targetDate 
+      ? Math.max(0, Math.ceil((new Date(result.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) 
       : null;
 
     return {
-      ...updatedGoal,
+      ...result,
       progressPercentage,
       daysRemaining,
     };
