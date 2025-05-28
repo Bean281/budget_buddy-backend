@@ -265,4 +265,150 @@ export class DashboardService {
       count,
     };
   }
+
+  /**
+   * Clear only transactions for a user
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared transactions
+   */
+  async clearTransactions(userId: string) {
+    const transactionCount = await this.prisma.transaction.count({ where: { userId } });
+    
+    await this.prisma.transaction.deleteMany({ where: { userId } });
+    
+    return {
+      message: 'All transactions cleared successfully',
+      clearedCount: transactionCount,
+      dataType: 'transactions',
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Clear only bills for a user
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared bills
+   */
+  async clearBills(userId: string) {
+    return await this.prisma.$transaction(async (prisma) => {
+      const billCount = await prisma.bill.count({ where: { userId } });
+      
+      // Delete transactions related to bills first
+      await prisma.transaction.deleteMany({
+        where: {
+          userId,
+          billId: { not: null }
+        }
+      });
+      
+      // Then delete bills
+      await prisma.bill.deleteMany({ where: { userId } });
+      
+      return {
+        message: 'All bills and related transactions cleared successfully',
+        clearedCount: billCount,
+        dataType: 'bills',
+        timestamp: new Date(),
+      };
+    });
+  }
+
+  /**
+   * Clear only savings goals for a user
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared goals
+   */
+  async clearSavingsGoals(userId: string) {
+    return await this.prisma.$transaction(async (prisma) => {
+      const goalCount = await prisma.savingsGoal.count({ where: { userId } });
+      
+      // Delete related plan items first
+      await prisma.planItem.deleteMany({
+        where: {
+          userId,
+          itemType: 'SAVINGS'
+        }
+      });
+      
+      // Then delete savings goals
+      await prisma.savingsGoal.deleteMany({ where: { userId } });
+      
+      return {
+        message: 'All savings goals and related plan items cleared successfully',
+        clearedCount: goalCount,
+        dataType: 'savings_goals',
+        timestamp: new Date(),
+      };
+    });
+  }
+
+  /**
+   * Clear all user data - transactions, bills, goals, plan items
+   * This will reset all financial data for the user
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared data
+   */
+  async clearAllUserData(userId: string) {
+    return await this.prisma.$transaction(async (prisma) => {
+      // Count existing data before deletion
+      const [transactionCount, billCount, goalCount, planItemCount, budgetCount, categoryCount] = await Promise.all([
+        prisma.transaction.count({ where: { userId } }),
+        prisma.bill.count({ where: { userId } }),
+        prisma.savingsGoal.count({ where: { userId } }),
+        prisma.planItem.count({ where: { userId } }),
+        prisma.budget.count({ where: { userId } }),
+        prisma.category.count({ where: { userId, isDefault: false } }), // Only user-created categories
+      ]);
+
+      // Delete all user data in the correct order (respecting foreign key constraints)
+      await Promise.all([
+        // Delete transactions (they reference categories and bills)
+        prisma.transaction.deleteMany({ where: { userId } }),
+        
+        // Delete category allocations (they reference budgets and categories)
+        prisma.categoryAllocation.deleteMany({
+          where: {
+            budget: { userId }
+          }
+        }),
+        
+        // Delete savings goals
+        prisma.savingsGoal.deleteMany({ where: { userId } }),
+        
+        // Delete plan items
+        prisma.planItem.deleteMany({ where: { userId } }),
+        
+        // Delete bills
+        prisma.bill.deleteMany({ where: { userId } }),
+        
+        // Delete budgets
+        prisma.budget.deleteMany({ where: { userId } }),
+        
+        // Delete user-created categories (keep default ones)
+        prisma.category.deleteMany({ 
+          where: { 
+            userId,
+            isDefault: false 
+          } 
+        }),
+      ]);
+
+      return {
+        message: 'All user data cleared successfully',
+        clearedData: {
+          transactions: transactionCount,
+          bills: billCount,
+          savingsGoals: goalCount,
+          planItems: planItemCount,
+          budgets: budgetCount,
+          userCategories: categoryCount,
+        },
+        timestamp: new Date(),
+      };
+    });
+  }
 }

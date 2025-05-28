@@ -1,10 +1,17 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiForbiddenResponse } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard';
 import { GetUser } from 'src/auth/decorator';
 import { DashboardService } from './dashboard.service';
 import { BudgetPeriodEnum, BudgetProgressParamsDto, RecentExpensesParamsDto } from './dto/dashboard-params.dto';
-import { FinancialSummaryModel, TodaySpendingModel, BudgetProgressModel, RecentExpensesModel } from './models/dashboard.model';
+import { 
+  BudgetProgressModel, 
+  FinancialSummaryModel, 
+  RecentExpensesModel, 
+  TodaySpendingModel,
+  ClearDataResponseModel,
+  ClearSingleDataTypeResponseModel 
+} from './models/dashboard.model';
 import { ParseDatePipe } from 'src/transactions/pipes/parse-date.pipe';
 
 @ApiTags('dashboard')
@@ -129,5 +136,88 @@ export class DashboardController {
     @Query() params: RecentExpensesParamsDto,
   ) {
     return this.dashboardService.getRecentExpenses(userId, params.limit);
+  }
+
+  /**
+   * Clear only transactions
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared transactions
+   */
+  @Post('clear-transactions')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Clear all transactions',
+    description: 'Deletes all transactions for the current user. WARNING: This action cannot be undone!',
+  })
+  @ApiOkResponse({
+    description: 'All transactions cleared successfully',
+    type: ClearSingleDataTypeResponseModel,
+  })
+  clearTransactions(@GetUser('id') userId: string) {
+    return this.dashboardService.clearTransactions(userId);
+  }
+
+  /**
+   * Clear only bills
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared bills
+   */
+  @Post('clear-bills')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Clear all bills',
+    description: 'Deletes all bills and related transactions for the current user. WARNING: This action cannot be undone!',
+  })
+  @ApiOkResponse({
+    description: 'All bills cleared successfully',
+    type: ClearSingleDataTypeResponseModel,
+  })
+  clearBills(@GetUser('id') userId: string) {
+    return this.dashboardService.clearBills(userId);
+  }
+
+  /**
+   * Clear only savings goals
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared goals
+   */
+  @Post('clear-goals')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Clear all savings goals',
+    description: 'Deletes all savings goals and related plan items for the current user. WARNING: This action cannot be undone!',
+  })
+  @ApiOkResponse({
+    description: 'All savings goals cleared successfully',
+    type: ClearSingleDataTypeResponseModel,
+  })
+  clearSavingsGoals(@GetUser('id') userId: string) {
+    return this.dashboardService.clearSavingsGoals(userId);
+  }
+
+  /**
+   * Clear all user financial data
+   * This will delete all transactions, bills, savings goals, budgets, and plan items
+   * WARNING: This action cannot be undone!
+   * 
+   * @param userId - Current authenticated user ID
+   * @returns Summary of cleared data
+   */
+  @Post('clear-all-data')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Clear all user financial data',
+    description: 'Deletes ALL user financial data including transactions, bills, savings goals, budgets, and plan items. WARNING: This action cannot be undone!',
+  })
+  @ApiOkResponse({
+    description: 'All user data cleared successfully',
+    type: ClearDataResponseModel,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden - Invalid user credentials' })
+  clearAllUserData(@GetUser('id') userId: string) {
+    return this.dashboardService.clearAllUserData(userId);
   }
 }

@@ -202,20 +202,84 @@ export class DayGroup {
 // Recent expenses response
 export class RecentExpensesModel {
   @ApiProperty({
-    description: 'Grouped expenses by day',
-    type: [DayGroup],
+    description: 'Expenses grouped by day with daily totals',
   })
-  days: DayGroup[];
+  expensesByDay: Record<string, {
+    date: Date;
+    expenses: any[];
+    totalAmount: number;
+  }>;
 
   @ApiProperty({
-    description: 'Total amount of all expenses',
-    example: 245.87,
+    description: 'Total number of recent expense transactions',
+    example: 15,
+  })
+  totalCount: number;
+
+  @ApiProperty({
+    description: 'Sum of all recent expense amounts',
+    example: 847.50,
   })
   totalAmount: number;
+}
+
+export class ClearDataResponseModel {
+  @ApiProperty({
+    description: 'Success message',
+    example: 'All user data cleared successfully',
+  })
+  message: string;
 
   @ApiProperty({
-    description: 'Total number of expenses',
-    example: 10,
+    description: 'Summary of cleared data counts',
+    example: {
+      transactions: 45,
+      bills: 8,
+      savingsGoals: 3,
+      planItems: 12,
+      budgets: 2,
+      userCategories: 5
+    },
   })
-  count: number;
+  clearedData: {
+    transactions: number;
+    bills: number;
+    savingsGoals: number;
+    planItems: number;
+    budgets: number;
+    userCategories: number;
+  };
+
+  @ApiProperty({
+    description: 'Timestamp when data was cleared',
+    example: '2024-12-01T10:30:00.000Z',
+  })
+  timestamp: Date;
+}
+
+export class ClearSingleDataTypeResponseModel {
+  @ApiProperty({
+    description: 'Success message',
+    example: 'All transactions cleared successfully',
+  })
+  message: string;
+
+  @ApiProperty({
+    description: 'Number of items cleared',
+    example: 45,
+  })
+  clearedCount: number;
+
+  @ApiProperty({
+    description: 'Type of data that was cleared',
+    example: 'transactions',
+    enum: ['transactions', 'bills', 'savings_goals'],
+  })
+  dataType: string;
+
+  @ApiProperty({
+    description: 'Timestamp when data was cleared',
+    example: '2024-12-01T10:30:00.000Z',
+  })
+  timestamp: Date;
 }
